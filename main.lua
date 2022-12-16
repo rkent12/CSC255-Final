@@ -123,9 +123,16 @@ function love.load()
     ground = physics_helper.makePhysicsObjectRect("ground", W/2, H-10, W, 20, "static", {0.2, 0.9, 0.2})
 
     player =  physics_helper.makePhysicsObjectPlayer("player", W/2, H-30, 50, 50, "dynamic", {0.76, 0.18, 0.05})
-    player.image = monkeyAnis[animationKeys[current_index]]
+    -- player.image = monkeyAnis[animationKeys[current_index]]
+
+    weapon1 = physics_helper.makePhysicsObejectWeapon("gun", W/2-20, H-30, 40, 20, "dynamic", {0.5, 0, 0.5})
+    joint = love.physics.newWeldJoint(player.body, weapon1.body, W/2, H-30, false)
 
     love.graphics.setBackgroundColor(0.41, 0.53, 0.97)
+
+    projectile_list = {}
+    i = 1
+
 end
 
 function love.update(dt)
@@ -136,26 +143,38 @@ function love.update(dt)
     monkeyAnis[animationKeys[current_index]].update(dt)
 
     if love.keyboard.isDown("right") then
-        player.x = player.x + speed
+        player.body:applyForce(200, 0)
     elseif love.keyboard.isDown("left") then
-        player.x = player.x - speed
+        player.body:applyForce(-200, 0)
     end
     if love.keyboard.isDown("up") then
-        player.y = player.y - speed
-    elseif love.keyboard.isDown("down") then
-        player.y = player.y + speed
+        if(player.grounded) then    
+            local x, y = player.body:getLinearVelocity()
+            player.body:setLinearVelocity(x, -400)
+        end
     end
-    if(player.x == 0 and player.y == 0)then
-        aniKey = "Idle"
-    else 
-        aniKey = "Running"
-    end
+    if love.keyboard.isDown("f") then
+        projectile_list[i] = physics_helper.makePhysicsObjectProjectile(weapon1.body:getX(), weapon1.body:getY(), 20, 5)
+        i = i + 1
+    end 
+    -- if(player.x == 0 and player.y == 0)then
+    --     aniKey = "Idle"
+    -- else 
+    --     aniKey = "Running"
+    -- end
 end
 
 function love.draw()
 
     ground.draw()
     player.draw()
+    weapon1.draw()
+
+    if(project_list~=nil) then
+        for n=1, #project_list do
+            project_list[n].draw()
+        end
+    end 
 
     -- monkeyAnis[animationKeys[current_index]].draw()
     -- love.graphics.print(animationKeys[current_index], 100, 100)
