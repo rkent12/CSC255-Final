@@ -58,13 +58,13 @@ function loadMonkeyAnimations(framesInfo)
     return anis
 end
 
-function love.keypressed(key)
-    if key == "a" then
-        current_index = current_index - 1
-    elseif key == "d" then
-        current_index = current_index + 1
-    end
-end
+-- function love.keypressed(key)
+--     if key == "a" then
+--         current_index = current_index - 1
+--     elseif key == "d" then
+--         current_index = current_index + 1
+--     end
+-- end
 animationKeys = {
     "Throwing",
     "Climbing",
@@ -108,11 +108,13 @@ aniKey = "Idle"
 speed = 100
 
 function love.load()
-    love.window.setMode(650, 650) -- set the window dimensions to 650 by 650
+    love.window.setFullscreen(true,"desktop")
     W = love.graphics.getWidth()
     H = love.graphics.getHeight()
 
-    require("helpers/physics_helper")
+    require("modules/physics_helper")
+    require("modules/player")
+    require("modules/weapon")
     
     love.physics.setMeter(64)
     world = love.physics.newWorld(0, 9.81*64, true)
@@ -120,12 +122,23 @@ function love.load()
 
     monkeyAnis = loadMonkeyAnimations(animationsInfo)
 
-    ground = physics_helper.makePhysicsObjectRect("ground", W/2, H-10, W, 20, "static", {0.2, 0.9, 0.2})
+    ground = physics_helper.makePhysicsObjectRect("ground", W/2, H-10, W*2, 20, "static", {0.2, 0.9, 0.2})
 
-    player =  physics_helper.makePhysicsObjectPlayer("player", W/2, H-30, 50, 50, "dynamic", {0.76, 0.18, 0.05})
-    player.image = monkeyAnis[animationKeys[current_index]]
+    player1 =  player.makePhysicsObjectPlayer("player", W/2, H-30, 50, 50, "dynamic", {0.76, 0.18, 0.05})
+
+    -- player.image = monkeyAnis[animationKeys[current_index]]
+
+    weapon1 = weapon.makePhysicsObejectWeapon("gun", W/2-20, H-30, 40, 20, "dynamic", {0.5, 0, 0.5})
+    joint = love.physics.newWeldJoint(player1.body, weapon1.body, W/2, H-30, false)
 
     love.graphics.setBackgroundColor(0.41, 0.53, 0.97)
+
+    projectile_list = {}
+
+    locked = false 
+
+    shootTimer = 0
+
 end
 
 function love.update(dt)
@@ -136,26 +149,54 @@ function love.update(dt)
     monkeyAnis[animationKeys[current_index]].update(dt)
 
     if love.keyboard.isDown("right") then
-        player.x = player.x + speed
+        player1.body:applyForce(200, 0)
     elseif love.keyboard.isDown("left") then
-        player.x = player.x - speed
+        player1.body:applyForce(-200, 0)
     end
     if love.keyboard.isDown("up") then
-        player.y = player.y - speed
-    elseif love.keyboard.isDown("down") then
-        player.y = player.y + speed
+        if(player1.grounded) then    
+            local x, y = player1.body:getLinearVelocity()
+            player1.body:setLinearVelocity(x, -400)
+        end
     end
-    if(player.x == 0 and player.y == 0)then
-        aniKey = "Idle"
-    else 
-        aniKey = "Running"
+    if love.keyboard.isDown("escape") then
+        love.event.quit(true)
     end
+    if love.keyboard.isDown("f")then 
+        if not locked then
+            locked = true
+            shootTimer = 0
+            projectile = weapon.makePhysicsObjectProjectile(weapon1.body:getX()-15, weapon1.body:getY(), 5, 5)
+            projectile.body:applyLinearImpulse(-35,-2)
+            table.insert(projectile_list, projectile)
+        end
+    elseif locked then
+        shootTimer = shootTimer + dt 
+        if shootTimer > 0.25 then
+            locked = false
+        end
+    end
+    
+
+    -- if(player.x == 0 and player.y == 0)then
+    --     aniKey = "Idle"
+    -- else  
+    --     aniKey = "Running"
+    -- end
+    
 end
 
 function love.draw()
 
     ground.draw()
-    player.draw()
+    player1.draw()
+    weapon1.draw()
+
+    if(projectile_list~=nil) then
+        for i, projectile in pairs(projectile_list)do
+            projectile.draw()
+        end
+    end 
 
     -- monkeyAnis[animationKeys[current_index]].draw()
     -- love.graphics.print(animationKeys[current_index], 100, 100)
