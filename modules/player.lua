@@ -1,5 +1,86 @@
 player = {}
 
+player.animationsInfo = {}
+player.animationsInfo["Running"] = 17
+player.animationsInfo["Run Throwing"] = 17
+player.animationsInfo["Run Slashing"] = 17
+player.animationsInfo["Run Firing"] = 17
+player.animationsInfo["Jump Start"] = 5
+player.animationsInfo["Jump Loop"] = 5
+player.animationsInfo["Hurt"] = 11
+player.animationsInfo["Happy"] = 11
+player.animationsInfo["Firing"] = 8
+player.animationsInfo["Falling Down"] = 5
+player.animationsInfo["Dying"] = 14
+player.animationsInfo["Climbing"] = 11
+player.animationsInfo["Idle"] = 11
+player.animationsInfo["Idle Blinking"] = 11
+player.animationsInfo["Slashing"] = 11
+player.animationsInfo["Sliding"] = 5
+player.animationsInfo["Throwing"] = 11
+
+function player.makeAnimation(duration, fps, images)
+    local ani = {}
+    ani.images = images
+
+    -- for i=0,8 do
+    --     table.insert(ani.images, love.graphics.newImage("explosion_frames-" .. i .. ".png"))
+    -- end
+
+    ani.duration = duration
+    ani.fps = fps
+
+    ani.index = 1
+    ani.scale = 0.3
+
+    ani.time = ani.duration / ani.fps
+
+    function ani.update(dt)
+        ani.time = ani.time - dt
+    
+        if(ani.time <= 0) then
+            ani.time = ani.duration / ani.fps
+            ani.index = ani.index + ani.duration
+
+            if(ani.index > #ani.images) then
+                -- loop the animation
+                ani.index = 1
+            --     tmp_anim.x = math.random(0,W)
+            --     tmp_anim.y = math.random(0,H)
+            --     tmp_anim.scale = math.random(1,5)
+            end
+        end
+    end
+    function ani.draw(x, y, rot)
+        love.graphics.draw(
+            ani.images[ani.index], 
+            x, y, 0,
+            ani.scale, ani.scale, 
+            ani.images[ani.index]:getWidth()/2, 
+            ani.images[ani.index]:getHeight()/2)
+    end
+
+    return ani
+end
+
+function player.loadMonkeyAnimations(framesInfo)
+    local anis = {}
+    for dir, numFrames in pairs(framesInfo) do
+        local images = {}
+        for i=0, numFrames do -- For each frame in each directory
+            local index = ""
+            for j=0, 2-#tostring(i) do -- For adding leading 0's 
+                index = index .. "0"
+            end
+            index = index .. i
+            path = "assets/monkey/animations/" .. dir .. "/" .. dir .. "_" .. index .. ".png"
+            table.insert(images, love.graphics.newImage(path)) -- Loads all images into images table
+        end
+        anis[dir] = player.makeAnimation(1, 30, images)
+    end
+    return anis
+end
+
 function player.makePhysicsObjectPlayer(name, x, y, w, h, bodyType, color)
     local player = {}
     player.body = love.physics.newBody(world, x, y, bodyType)
@@ -12,11 +93,13 @@ function player.makePhysicsObjectPlayer(name, x, y, w, h, bodyType, color)
     player.grounded = false
 
     player.name = name
+    player.score = 0
+    -- player.monkeyAnis = player.loadMonkeyAnimations(player.animationsInfo)
 
     player.fixture:setUserData(player)
 
     function player.draw()
-        if(player.image ~= nil) then
+        if(player.currentAni ~= nil) then
             -- draw the image
             love.graphics.setColor({1,0,1,0.4})
             love.graphics.polygon("fill", 
@@ -27,72 +110,39 @@ function player.makePhysicsObjectPlayer(name, x, y, w, h, bodyType, color)
             local y = player.body:getY()
             local rot = player.body:getAngle()
 
-            love.graphics.draw(player.image, x, y, rot,
-                w/player.image:getWidth(), 
-                h/player.image:getHeight(),
-                player.image:getWidth()/2,
-                player.image:getHeight()/2)
+            player.currentAni.draw(x, y, rot)
+
+            -- love.graphics.draw(player.image, x, y, rot,
+            --     w/player.image:getWidth(),
+            --     h/player.image:getHeight())
 
         else             
             love.graphics.setColor(player.color)
-            love.graphics.polygon("fill", 
+            love.graphics.polygon("fill",
                 player.body:getWorldPoints(
                     player.shape:getPoints())) 
         end
     end
+    function player.update()
+        if love.keyboard.isDown("left")then
+            player.aniKey = 15
+            -- player.currentAni = monkeyAnis[animationKeys[player.aniKey]]
+        elseif love.keyboard.isDown("right")then
+            player.aniKey = 15
+            -- player.currentAni = monkeyAnis[animationKeys[player.aniKey]]
+        elseif love.keyboard.isDown("up")then
+            player.aniKey = 11
+            -- player.currentAni = monkeyAnis[animationKeys[player.aniKey]]
+        elseif love.keyboard.isDown("f")then
+            player.aniKey = 5
+            -- player.currentAni = monkeyAnis[animationKeys[player.aniKey]]
+        else
+            player.aniKey = 8
+            -- player.currentAni = monkeyAnis[animationKeys[player.aniKey]]
+        end
+    
+    end
+
     return player
 end
 
-function getTableIfNameMatches(name, a, b)
-    if(a:getUserData().name == name) then 
-        return a:getUserData()
-    elseif(b:getUserData().name == name) then
-        return b:getUserData()
-    else
-        return nil
-    end
-end
-
-function beginContact(a, b, coll)
-	-- a is a fixture
-    -- b is a fixture
-    local playerTable = getTableIfNameMatches("player", a, b)
-    local groundTable = getTableIfNameMatches("ground", a, b)
-    local weaponsTable = getTableIfNameMatches("weapon", a, b)
-
-    if(playerTable~=nil and groundTable~=nil) then
-        -- player is touching the ground
-        playerTable.grounded = true
-        playerTable.color = {0, 1, 0}
-    end
-    if(playerTable~=nil and weaponsTable~=nil) then
-        if(love.keyboard.isDown("f")) then
-            
-        end
-    end
-
-    -- if(playerTable ~= nil) then 
-    --     playerTable.color = {math.random(),math.random(),math.random()}
-    -- end
-end
-
-function endContact(a, b, coll)
-    local playerTable = getTableIfNameMatches("player", a, b)
-    local groundTable = getTableIfNameMatches("ground", a, b)
-    local weaponsTable = getTableIfNameMatches("weapon", a, b)
-
-    if(playerTable~=nil and groundTable~=nil) then
-        -- player is not touching this ground anymore
-        playerTable.grounded = false
-        playerTable.color = {1, 0, 1}
-    end
-    
-end
-
-function preSolve(a, b, coll)
-	
-end
-
-function postSolve(a, b, coll, normalimpulse, tangentimpulse)
-	
-end

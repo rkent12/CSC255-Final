@@ -77,19 +77,18 @@ end
 function beginContact(a, b, coll)
 	-- a is a fixture
     -- b is a fixture
-    local playerTable = getTableIfNameMatches("player", a, b)
     local groundTable = getTableIfNameMatches("ground", a, b)
-    local weaponsTable = getTableIfNameMatches("weapon", a, b)
+    local playerTable = getTableIfNameMatches("player", a, b)
+    local player2Table = getTableIfNameMatches("player2", a, b)
+    local projectileTable = getTableIfNameMatches("bullet", a, b)
 
-    if(playerTable~=nil and groundTable~=nil) then
+    if(playerTable~=nil) then
         -- player is touching the ground
         playerTable.grounded = true
         playerTable.color = {0, 1, 0}
     end
-    if(playerTable~=nil and weaponsTable~=nil) then
-        if(love.keyboard.isDown("f")) then
-            
-        end
+    if(player2Table~=nil and projectileTable~=nil) then
+        print("hit")
     end
 
     -- if(playerTable ~= nil) then 
@@ -99,13 +98,18 @@ end
 
 function endContact(a, b, coll)
     local playerTable = getTableIfNameMatches("player", a, b)
+    local player2Table = getTableIfNameMatches("player2", a, b)
+    local projectileTable = getTableIfNameMatches("projectile", a, b)
     local groundTable = getTableIfNameMatches("ground", a, b)
     local weaponsTable = getTableIfNameMatches("weapon", a, b)
 
-    if(playerTable~=nil and groundTable~=nil) then
+    if(playerTable~=nil) then
         -- player is not touching this ground anymore
         playerTable.grounded = false
         playerTable.color = {1, 0, 1}
+    end
+    if(player2Table~=nil and projectileTable~=nil)then
+        print("end")
     end
     
 end
