@@ -56,7 +56,8 @@ function player.makeAnimation(duration, fps, images)
         love.graphics.draw(
             ani.images[ani.index],
             x, y, 0,
-            ani.scale, ani.scale,
+            -- scale, ani.scale / scale
+            ani.scale , ani.scale,
             ani.images[ani.index]:getWidth()/2,
             ani.images[ani.index]:getHeight()/2)
     end
@@ -94,7 +95,6 @@ function player.makePhysicsObjectPlayer(name, x, y, w, h, bodyType, color)
     player.grounded = false
 
     player.name = name
-    player.lastDirection = "Right"
     player.score = 0
 
     player.fixture:setUserData(player)
@@ -128,9 +128,11 @@ function player.makePhysicsObjectPlayer(name, x, y, w, h, bodyType, color)
         if love.keyboard.isDown("left")then
             player.aniKey = 15
             player.currentAni = monkeyAnis[animationKeys[player.aniKey]]
+            player.scale = -0.3
         elseif love.keyboard.isDown("right")then
             player.aniKey = 15
             player.currentAni = monkeyAnis[animationKeys[player.aniKey]]
+            player.scale = 0.3
         elseif love.keyboard.isDown("up")then
             player.aniKey = 11
             player.currentAni = monkeyAnis[animationKeys[player.aniKey]]
