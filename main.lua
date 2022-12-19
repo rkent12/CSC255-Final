@@ -99,8 +99,10 @@ function love.update(dt)
 
     mouse_x = love.mouse.getX()
     mouse_y = love.mouse.getY()
+
     -- monkeyAnis[animationKeys[current_index]].update(dt)
     -- player1.currentAni = monkeyAnis[animationKeys[aniKey]]
+
     if (GameState == 1)then
         -- print("Loading Game")
     elseif (GameState == 2)then
@@ -171,17 +173,17 @@ function love.draw()
         player1.draw()
         player2.draw()
         weapon1.draw()
-    
+
         if(projectile_list~=nil) then
             for i, projectile in pairs(projectile_list)do
                 projectile.draw()
             end
         end
-    
+
         -- monkeyAnis[animationKeys[current_index]].draw()
         -- love.graphics.print(animationKeys[current_index], 100, 100)
     elseif (GameState == 3) then
-        
+
     end
 
 end
