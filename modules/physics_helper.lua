@@ -90,6 +90,9 @@ function beginContact(a, b, coll)
     if(player2Table~=nil and projectileTable~=nil) then
         print("hit")
     end
+    if(projectileTable~=nil and groundTable~=nil)then
+        print("despawn")
+    end
 
     -- if(playerTable ~= nil) then 
     --     playerTable.color = {math.random(),math.random(),math.random()}
@@ -109,7 +112,10 @@ function endContact(a, b, coll)
         playerTable.color = {1, 0, 1}
     end
     if(player2Table~=nil and projectileTable~=nil)then
-        print("end")
+        table.remove(projectile_list, projectileTable.i)
+    end
+    if(projectileTable~=nil and groundTable~=nil)then
+        table.remove(projectile_list, projectileTable.i)
     end
     
 end

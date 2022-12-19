@@ -52,12 +52,12 @@ function player.makeAnimation(duration, fps, images)
             end
         end
     end
-    function ani.draw(x, y, rot, scale)
+    function ani.draw(x, y, rot, scaleX, scaleY)
         love.graphics.draw(
             ani.images[ani.index],
             x, y, 0,
             -- scale, ani.scale / scale
-            ani.scale , ani.scale,
+            scaleX , scaleY,
             ani.images[ani.index]:getWidth()/2,
             ani.images[ani.index]:getHeight()/2)
     end
@@ -92,12 +92,60 @@ function player.makePhysicsObjectPlayer(name, x, y, w, h, bodyType, color)
     player.shape = love.physics.newRectangleShape(0,0,w,h)
     player.fixture = love.physics.newFixture(player.body, player.shape)
     player.fixture:setCategory(1)
-    player.grounded = false
+    player.grounded = true
 
     player.name = name
     player.score = 0
+    player.scaleX = 0.3
+    player.scaleY = 0.3
 
     player.fixture:setUserData(player)
+
+    function player.update()
+        speed = player.body:getLinearVelocity()
+        if player.grounded then
+            if love.keyboard.isDown("up") then
+                player.aniKey = 11
+                player.currentAni = monkeyAnis[animationKeys[player.aniKey]]
+            elseif love.keyboard.isDown("left") and love.keyboard.isDown("f")then
+                player.aniKey = 12
+                player.currentAni = monkeyAnis[animationKeys[player.aniKey]]
+                player.scaleX = -0.3
+            elseif love.keyboard.isDown("left") and love.keyboard.isDown("e")then
+                player.aniKey = 13
+                player.currentAni = monkeyAnis[animationKeys[player.aniKey]]
+                player.scaleX = -0.3
+            elseif love.keyboard.isDown("right") and love.keyboard.isDown("f")then
+                player.aniKey = 12
+                player.currentAni = monkeyAnis[animationKeys[player.aniKey]]
+                player.scaleX = 0.3
+            elseif love.keyboard.isDown("right") and love.keyboard.isDown("e")then
+                player.aniKey = 13
+                player.currentAni = monkeyAnis[animationKeys[player.aniKey]]
+                player.scaleX = 0.3
+            elseif love.keyboard.isDown("left") then
+                player.aniKey = 15
+                player.currentAni = monkeyAnis[animationKeys[player.aniKey]]
+                player.scaleX = -0.3
+            elseif love.keyboard.isDown("right") then
+                player.aniKey = 15
+                player.currentAni = monkeyAnis[animationKeys[player.aniKey]]
+                player.scaleX = 0.3
+            elseif love.keyboard.isDown("f") then
+                player.aniKey = 5
+                player.currentAni = monkeyAnis[animationKeys[player.aniKey]]
+            elseif love.keyboard.isDown("e") then
+                player.aniKey = 16
+                player.currentAni = monkeyAnis[animationKeys[player.aniKey]]
+            else
+                player.aniKey = 8
+                player.currentAni = monkeyAnis[animationKeys[player.aniKey]]
+            end
+        else
+            player.aniKey = 10
+            player.currentAni = monkeyAnis[animationKeys[player.aniKey]]
+        end
+    end
 
     function player.draw()
         if(player.currentAni ~= nil) then
@@ -111,7 +159,7 @@ function player.makePhysicsObjectPlayer(name, x, y, w, h, bodyType, color)
             local y = player.body:getY()
             local rot = player.body:getAngle()
 
-            player.currentAni.draw(x, y, rot, scale)
+            player.currentAni.draw(x, y, rot, player.scaleX, player.scaleY)
 
             -- love.graphics.draw(player.image, x, y, rot,
             --     w/player.image:getWidth(),
@@ -123,27 +171,6 @@ function player.makePhysicsObjectPlayer(name, x, y, w, h, bodyType, color)
                 player.body:getWorldPoints(
                     player.shape:getPoints())) 
         end
-    end
-    function player.update()
-        if love.keyboard.isDown("left")then
-            player.aniKey = 15
-            player.currentAni = monkeyAnis[animationKeys[player.aniKey]]
-            player.scale = -0.3
-        elseif love.keyboard.isDown("right")then
-            player.aniKey = 15
-            player.currentAni = monkeyAnis[animationKeys[player.aniKey]]
-            player.scale = 0.3
-        elseif love.keyboard.isDown("up")then
-            player.aniKey = 11
-            player.currentAni = monkeyAnis[animationKeys[player.aniKey]]
-        elseif love.keyboard.isDown("f")then
-            player.aniKey = 5
-            player.currentAni = monkeyAnis[animationKeys[player.aniKey]]
-        else
-            player.aniKey = 8
-            player.currentAni = monkeyAnis[animationKeys[player.aniKey]]
-        end
-    
     end
 
     return player

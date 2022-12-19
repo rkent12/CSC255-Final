@@ -78,6 +78,7 @@ function love.load()
 
     projectile_list = {}
     locked = false
+    jumpLock = false
     shootTimer = 0
 
 end
@@ -109,43 +110,85 @@ function love.update(dt)
         -- print("Starting Game")
         player1.currentAni.update(dt)
         player2.currentAni.update(dt)
-
-        if love.keyboard.isDown("right") then
-            player1.update()
-            player1.body:applyForce(275, 0)
-            player1.body:setLinearDamping(0.2)
-        elseif love.keyboard.isDown("left") then
-            player1.update()
-            player1.body:applyForce(-275, 0)
-            player1.body:setLinearDamping(0.15)
-        end
-        if love.keyboard.isDown("up") then
+        if love.keyboard.isDown("escape") then
+            love.event.quit(true)
+        elseif love.keyboard.isDown("up") then
             if(player1.grounded) then
                 player1.update()
                 local x, y = player1.body:getLinearVelocity()
                 player1.body:setLinearVelocity(x, -500)
             end
-        end
-        if love.keyboard.isDown("escape") then
-            love.event.quit(true)
-        end
-        if love.keyboard.isDown("f")then
+
+        elseif love.keyboard.isDown("right") and love.keyboard.isDown("f") then
+            player1.update()
+            player1.body:applyForce(275, 0)
+            player1.body:setLinearDamping(0.2)
+            player1.update()
+            locked = true
+            shootTimer = 0
+            projectile = weapon.makePhysicsObjectProjectile("projectile", weapon1.body:getX()+45, weapon1.body:getY()+15, 5, 5, #projectile_list + 1)
+            projectile.body:applyLinearImpulse(35,-2)
+            table.insert(projectile_list, projectile)
+
+        elseif love.keyboard.isDown("right") and love.keyboard.isDown("e") then
+            player1.update()
+            player1.body:applyForce(275, 0)
+            player1.body:setLinearDamping(0.2)
+
+        elseif love.keyboard.isDown("left") and love.keyboard.isDown("f") then
+            player1.update()
+            player1.body:applyForce(-275, 0)
+            player1.body:setLinearDamping(0.15)
+            player1.update()
+            locked = true
+            shootTimer = 0
+            projectile = weapon.makePhysicsObjectProjectile("projectile", weapon1.body:getX()-15, weapon1.body:getY()+15, 5, 5, #projectile_list + 1)
+            projectile.body:applyLinearImpulse(-35,-2)
+            table.insert(projectile_list, projectile)
+
+        elseif love.keyboard.isDown("left") and love.keyboard.isDown("e") then
+            player1.update()
+            player1.body:applyForce(-275, 0)
+            player1.body:setLinearDamping(0.15)
+
+        elseif love.keyboard.isDown("right")then
+            player1.update()
+            player1.body:applyForce(275, 0)
+            player1.body:setLinearDamping(0.2)
+
+        elseif love.keyboard.isDown("left") then
+            player1.update()
+            player1.body:applyForce(-275, 0)
+            player1.body:setLinearDamping(0.2)
+
+        elseif love.keyboard.isDown("f")then
             if not locked then
-                player1.update()
-                locked = true
-                shootTimer = 0
-                projectile = weapon.makePhysicsObjectProjectile("projectile", weapon1.body:getX()-15, weapon1.body:getY(), 5, 5)
-                projectile.body:applyLinearImpulse(-35,-2)
-                table.insert(projectile_list, projectile)
+                if(player1.scaleX == -0.3)then
+                    player1.update()
+                    locked = true
+                    shootTimer = 0
+                    projectile = weapon.makePhysicsObjectProjectile("projectile", weapon1.body:getX()-15, weapon1.body:getY()+15, 5, 5, #projectile_list + 1)
+                    projectile.body:applyLinearImpulse(-35,-2)
+                    table.insert(projectile_list, projectile)
+                elseif(player1.scaleX == 0.3)then
+                    player1.update()
+                    locked = true
+                    shootTimer = 0
+                    projectile = weapon.makePhysicsObjectProjectile("projectile", weapon1.body:getX()+45, weapon1.body:getY()+15, 5, 5, #projectile_list + 1)
+                    projectile.body:applyLinearImpulse(35,-2)
+                    table.insert(projectile_list, projectile)
+                end
             end
-        elseif locked then
-            shootTimer = shootTimer + dt
-            if shootTimer > 0.25 then
-                locked = false
-            end
+            elseif locked then
+                shootTimer = shootTimer + dt
+                if shootTimer > 0.25 then
+                    locked = false
+                end 
+        elseif love.keyboard.isDown("e")then
+            player1.update()
         end
     elseif (GameState == 3) then
-
+        print ("dead")
     end
 end
 
@@ -160,6 +203,7 @@ function love.draw()
         startBtn = love.graphics.rectangle("fill", W/2-62.5, H/2-40, 125, 40, 8)
         love.graphics.setColor(1.0, 1.0, 1.0)
         love.graphics.printf("Start Game", W/2-60, H/2-30, 125,"center")
+
     elseif (GameState == 2) then
         love.graphics.setColor(1.0, 1.0, 1.0)
         love.graphics.draw(backgroundImg, 0, 0, 0, 7, 4.3)
@@ -172,11 +216,15 @@ function love.draw()
         platform5.draw()
         player1.draw()
         player2.draw()
-        weapon1.draw()
+        -- weapon1.draw()
 
         if(projectile_list~=nil) then
             for i, projectile in pairs(projectile_list)do
-                projectile.draw()
+                if(player1.scaleX == 0.3)then
+                    projectile.draw("left")
+                elseif(player1.scaleX == -0.3)then
+                    projectile.draw("right")
+                end
             end
         end
 
