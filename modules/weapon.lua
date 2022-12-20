@@ -56,7 +56,7 @@ function weapon.makePhysicsObjectProjectile(name, x, y, r, duration, i)
             love.graphics.draw(new_phys_obj.image,
                 new_phys_obj.body:getX(),
                 new_phys_obj.body:getY(),
-                3, -0.5, 0.5)
+                3, -0.5, 0.5, 0.5)
         elseif(direction == "right")then
             love.graphics.setColor(1.0, 1.0, 1.0)
             love.graphics.draw(new_phys_obj.image,
